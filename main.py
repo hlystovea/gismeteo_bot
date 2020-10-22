@@ -11,6 +11,7 @@ gis_token = os.environ.get('GIS_TOKEN')
 
 bot = telebot.TeleBot(bot_token)
 
+# расшифровка осадков и облачности
 cloudiness = {
     0: 'ясно',
     1: 'малооблачно',
