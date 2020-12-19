@@ -49,7 +49,7 @@ def start_message(message):
     txt_btn = f'Отправить моё местоположение'
     button_loc = KeyboardButton(txt_btn, request_location = True)
     keyboard.add(button_loc)
-    
+
     bot.send_message(message.chat.id, start_text, reply_markup=keyboard)
 
 # погода по местоположению
@@ -93,10 +93,10 @@ def weather_by_location(message):
     full_name = 'этом месте'
 
     text = weather_answer_current(url, param_loc, full_name)
-    
+
     bot.send_message(message.chat.id, text, reply_markup=key_h,
             parse_mode='Markdown', disable_web_page_preview=True)
-  
+
 # погода по названию
 @bot.message_handler(content_types=['text'])
 def weather_by_id(message):
@@ -218,7 +218,7 @@ def weather_forecast(call):
 
 # запрос текущей погоды
 def weather_answer_current(url, param, full_name):
-    
+
     response = requests.get(url, params=param, headers=head)
 
     if response.status_code != 200: # проверка доступности сервера
@@ -233,19 +233,19 @@ def weather_answer_current(url, param, full_name):
         precip_type = weather['response']['precipitation']['type']
         precip_int = weather['response']['precipitation']['intensity']
         precip_amount = weather['response']['precipitation']['amount']
-        
+
 
         sn='+'
         if temp <= 0: # знак перед значением температуры
             sn = ''
-        
+
         if precip_amount == None or precip_amount == 0: # ответ если нет осадков
             answer = (f'[Сейчас](https://www.gismeteo.ru/) в {full_name}: {sn}{temp} \xb0С, {cloud},'
                     f' ветер {wind} м/с, {p_int[precip_int]} {p_type[precip_type]}.')
         else:
             answer = (f'[Сейчас](https://www.gismeteo.ru/) в {full_name}: {sn}{temp} \xb0С, {cloud}, ветер {wind} м/с,'
                     f' {p_int[precip_int]} {p_type[precip_type]} {precip_amount} мм.')
-        
+
     return answer
 
 # запрос прогноза погоды
