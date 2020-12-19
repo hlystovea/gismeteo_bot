@@ -4,7 +4,7 @@ import requests
 import os
 import time
 from telebot.types import (InlineKeyboardMarkup, ReplyKeyboardMarkup,
-            KeyboardButton, ReplyKeyboardRemove, InlineKeyboardButton)
+            KeyboardButton, InlineKeyboardButton)
 
 bot_token = os.environ.get('BOT_TOKEN')
 gis_token = os.environ.get('GIS_TOKEN')
@@ -47,7 +47,7 @@ def start_message(message):
                 f' своё местоположение для получения погоды.')
     keyboard = ReplyKeyboardMarkup(True, True)
     txt_btn = f'Отправить моё местоположение'
-    button_loc = KeyboardButton(txt_btn, request_location = True)
+    button_loc = KeyboardButton(txt_btn, request_location=True)
     keyboard.add(button_loc)
 
     bot.send_message(message.chat.id, start_text, reply_markup=keyboard)
@@ -65,7 +65,7 @@ def weather_by_location(message):
 
     key_h = InlineKeyboardMarkup()
     btn_today = InlineKeyboardButton(text='Прогноз на сегодня',
-                                        callback_data = 'today')
+                                        callback_data='today')
     btn_td_m = InlineKeyboardButton(text='Утро',
     callback_data=f'0 {message.location.latitude} {message.location.longitude}')
     btn_td_a = InlineKeyboardButton(text='День',
@@ -75,7 +75,7 @@ def weather_by_location(message):
     btn_td_n = InlineKeyboardButton(text='Ночь',
     callback_data=f'18 {message.location.latitude} {message.location.longitude}')
     btn_tmrrw = InlineKeyboardButton(text='Прогноз на завтра',
-                                    callback_data = 'tomorrow')
+                                    callback_data='tomorrow')
     btn_tm_m = InlineKeyboardButton(text='Утро',
     callback_data=f'24 {message.location.latitude} {message.location.longitude}')
     btn_tm_a = InlineKeyboardButton(text='День',
@@ -136,7 +136,7 @@ def weather_by_id(message):
     
     key_h = InlineKeyboardMarkup()
     btn_today = InlineKeyboardButton(text='Прогноз на сегодня',
-                                        callback_data = 'today')
+                                        callback_data='today')
     btn_td_m = InlineKeyboardButton(text='Утро',
     callback_data=f'0 {cities_id}')
     btn_td_a = InlineKeyboardButton(text='День',
@@ -146,7 +146,7 @@ def weather_by_id(message):
     btn_td_n = InlineKeyboardButton(text='Ночь',
     callback_data=f'18 {cities_id}')
     btn_tmrrw = InlineKeyboardButton(text='Прогноз на завтра',
-                                    callback_data = 'tomorrow')
+                                    callback_data='tomorrow')
     btn_tm_m = InlineKeyboardButton(text='Утро',
     callback_data=f'24 {cities_id}')
     btn_tm_a = InlineKeyboardButton(text='День',
@@ -170,11 +170,11 @@ def weather_forecast(call):
 
     data = call.data.split()
 
-    if data[0].isdigit() == True:
+    if data[0].isdigit():
         
         hours = int(data[0])
 
-        if len(data) == 2: # прогноз по ID населенного пункта
+        if len(data) == 2:# прогноз по ID населенного пункта
             cities_id = data[1]
 
             param_for = {
@@ -186,7 +186,7 @@ def weather_forecast(call):
 
             answer = weather_answer_forecast(url, param_for, hours)
         
-        elif len(data) == 3: # прогноз по координатам
+        elif len(data) == 3:# прогноз по координатам
             latitude = data[1]
             longitude = data[2]
             
@@ -236,10 +236,10 @@ def weather_answer_current(url, param, full_name):
 
 
         sn='+'
-        if temp <= 0: # знак перед значением температуры
+        if temp <= 0:# знак перед значением температуры
             sn = ''
-
-        if precip_amount == None or precip_amount == 0: # ответ если нет осадков
+        
+        if precip_amount is None or precip_amount == 0:# ответ если нет осадков
             answer = (f'[Сейчас](https://www.gismeteo.ru/) в {full_name}: {sn}{temp} \xb0С, {cloud},'
                     f' ветер {wind} м/с, {p_int[precip_int]} {p_type[precip_type]}.')
         else:
@@ -280,7 +280,7 @@ def weather_answer_forecast(url, param, hours):
             p_f = 'было'
 
         sn = '+'
-        if temp <= 0: # знак перед значением температуры
+        if temp <= 0:# знак перед значением температуры
             sn = ''
 
         time_of_day = {
@@ -294,7 +294,7 @@ def weather_answer_forecast(url, param, hours):
             42: 'Завтра ночью',
         }
         
-        if precip_amount == None or precip_amount == 0: # ответ если нет осадков
+        if precip_amount is None or precip_amount == 0:# ответ если нет осадков
             answer = (f'{time_of_day[hours]} {p_f}: {sn}{temp} \xb0С, {cloud},'
                     f' ветер {wind} м/с, {p_int[precip_int]} {p_type[precip_type]}.')
         else:
