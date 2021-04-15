@@ -1,8 +1,9 @@
-import telebot
 import json
 import requests
 import os
 import time
+
+import telebot
 from telebot.types import (InlineKeyboardMarkup, ReplyKeyboardMarkup,
             KeyboardButton, InlineKeyboardButton)
 
@@ -102,7 +103,7 @@ def weather_by_location(message):
 def weather_by_id(message):
 
     url_search = 'https://api.gismeteo.net/v2/search/cities/'
-    
+
     param_search = {
         'lang': 'ru',
         'query': message.text, 
@@ -111,15 +112,15 @@ def weather_by_id(message):
     cities_id = 0
 
     response = requests.get(url_search, params=param_search, headers=head)
-        
+
     if response.status_code != 200:
         text = f'Нет связи с сервером погоды'
     else:
         r = json.loads(response.text)
-    
+
         if r['response']['total'] == 0:
             text = f'Населённый пункт не найдет.'
-    
+
         else:
             cities_id = r['response']['items'][0]['id']
             city = r['response']['items'][0]['name']
@@ -133,7 +134,7 @@ def weather_by_id(message):
                 }
 
             text = weather_answer_current(url, param_id, full_name)
-    
+
     key_h = InlineKeyboardMarkup()
     btn_today = InlineKeyboardButton(text='Прогноз на сегодня',
                                         callback_data='today')
@@ -171,7 +172,7 @@ def weather_forecast(call):
     data = call.data.split()
 
     if data[0].isdigit():
-        
+
         hours = int(data[0])
 
         if len(data) == 2:# прогноз по ID населенного пункта
@@ -185,11 +186,11 @@ def weather_forecast(call):
             url = f'https://api.gismeteo.net/v2/weather/forecast/{cities_id}/'
 
             answer = weather_answer_forecast(url, param_for, hours)
-        
+
         elif len(data) == 3:# прогноз по координатам
             latitude = data[1]
             longitude = data[2]
-            
+
             param_for = {
                 'lang': 'ru',
                 'latitude': latitude, 
@@ -203,16 +204,16 @@ def weather_forecast(call):
 
         else:
             answer = f'Упс.. неизвестный запрос.'
-        
+
         bot.send_message(call.message.chat.id, answer)
-    
+
     elif data[0] == 'today':
         bot.answer_callback_query(callback_query_id=call.id, text='Выберите время суток')
     elif data[0] == 'tomorrow':
         bot.answer_callback_query(callback_query_id=call.id, text='Выберите время суток')
     else: # на случай неправильного call.data
         answer = f'Похоже мой создатель ещё не научил меня обрабатывать такие запросы.'
-       
+
         bot.send_message(call.message.chat.id, answer)
 
 
@@ -238,7 +239,7 @@ def weather_answer_current(url, param, full_name):
         sn='+'
         if temp <= 0:# знак перед значением температуры
             sn = ''
-        
+
         if precip_amount is None or precip_amount == 0:# ответ если нет осадков
             answer = (f'[Сейчас](https://www.gismeteo.ru/) в {full_name}: {sn}{temp} \xb0С, {cloud},'
                     f' ветер {wind} м/с, {p_int[precip_int]} {p_type[precip_type]}.')
@@ -250,11 +251,11 @@ def weather_answer_current(url, param, full_name):
 
 # запрос прогноза погоды
 def weather_answer_forecast(url, param, hours):
-    
+
     response = requests.get(url, params=param, headers=head)
 
-    if response.status_code != 200: # проверка доступности сервера
-        answer = f'Нет связи с сервером погоды'
+    if response.status_code != 200:  # проверка доступности сервера
+        answer = 'Нет связи с сервером погоды'
     else:
         weather = json.loads(response.text)
         # расчет смещения времени до 6:00 утра
@@ -293,14 +294,20 @@ def weather_answer_forecast(url, param, hours):
             36: 'Завтра вечером',
             42: 'Завтра ночью',
         }
-        
+
         if precip_amount is None or precip_amount == 0:# ответ если нет осадков
             answer = (f'{time_of_day[hours]} {p_f}: {sn}{temp} \xb0С, {cloud},'
                     f' ветер {wind} м/с, {p_int[precip_int]} {p_type[precip_type]}.')
         else:
             answer = (f'{time_of_day[hours]} {p_f}: {sn}{temp} \xb0С, {cloud}, ветер {wind} м/с,'
                     f' {p_int[precip_int]} {p_type[precip_type]} {precip_amount} мм.')
-        
+
     return answer
 
-bot.polling()
+
+while True:
+    try:
+        bot.polling(True)
+    except requests.exceptions.ConnectionError as e:
+        print(repr(e))
+        time.sleep(30)
